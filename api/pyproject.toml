@@ -22,3 +22,23 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.0",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle (style)
+    "F",        # pyflakes (erreurs, imports inutiles)
+    "I",        # isort (tri des imports)
+    "N",        # pep8-naming (conventions de nommage)
+    "UP",       # pyupgrade (syntaxe moderne)
+    "B",        # bugbear (pièges courants)
+    "SIM",      # simplify (code simplifiable)
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
