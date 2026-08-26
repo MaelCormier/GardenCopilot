@@ -7,7 +7,7 @@ Ne connaît pas Groq.
 
 from qdrant_client import QdrantClient
 
-from garden.config import COLLECTION, settings, TOP_K
+from garden.config import COLLECTION, TOP_K, settings
 from garden.embeddings import encode
 
 # Connexion ouverte une fois à l'import.
@@ -22,10 +22,8 @@ def search(question: str, top_k: int = TOP_K) -> list[dict]:
         query=vector,
         limit=top_k,
     ).points
-    return [
-        {"text": h.payload["text"], "source": h.payload["source"]}
-        for h in hits
-    ]
+    return [{"text": h.payload["text"], "source": h.payload["source"]} for h in hits]
+
 
 def get_client():
     return _client
