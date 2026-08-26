@@ -7,6 +7,7 @@ C'est CE module que main.py importera pour l'endpoint /ask.
 
 from garden.llm import generate
 from garden.vectorstore import search
+from garden.embeddings import encode
 
 # --- A : le garde-fou strict (ne répond QUE depuis le contexte) ---
 SYSTEM_PROMPT = (
@@ -28,11 +29,12 @@ def build_prompt(question: str, chunks: list[str]) -> list[dict]:
     ]
 
 
-def answer(question: str) -> str:
-    """Le RAG complet en 3 temps."""
-    chunks   = search(question)                # R
-    messages = build_prompt(question, chunks)  # A
-    return generate(messages)                  # G
+def answer(question: str) -> tuple[str, list[str]]:
+    chunks = search(question)
+    context = "\n\n".join(c["text"] for c in chunks)
+    sources = list(dict.fromkeys(c["source"] for c in chunks))
+    prompt = build_prompt(question, context)
+    return generate(prompt), sources
 
 
 if __name__ == "__main__":
