@@ -1,15 +1,31 @@
-"""
-config.py — Toutes les constantes en un seul endroit.
+# src/garden/config.py
+from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-Pour l'instant : os.environ brut.
-En P1 (endpoint), on remplacera l'intérieur par pydantic-settings
-SANS toucher aux autres modules (ils importent juste ces noms).
-"""
+# ── Constantes de code (fixes, pas d'env) ──────────────────────
+BASE_DIR = Path(__file__).resolve().parent.parent.parent   # /app
+DATA_DIR = BASE_DIR / "data"
 
-import os
+COLLECTION = "jardinage"
+EMBED_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
+EMBEDDING_DIM = 384
+MAX_WORDS = 100
+MIN_WORDS = 8
+TOP_K = 5
 
-QDRANT_URL  = os.environ.get("QDRANT_URL", "http://qdrant:6333")
-COLLECTION  = os.environ.get("QDRANT_COLLECTION", "jardinage")
-EMBED_MODEL = os.environ.get("EMBED_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")
-GROQ_MODEL  = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
-TOP_K       = int(os.environ.get("TOP_K", "3"))   # int() car os.environ rend une str
+GROQ_MODEL = "openai/gpt-oss-120b"
+
+
+# ── Config d'environnement (validée au boot) ───────────────────
+class Settings(BaseSettings):
+    groq_api_key: str
+    qdrant_url: str = "http://qdrant:6333"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
+settings = Settings()   # instancié une fois, importé partout

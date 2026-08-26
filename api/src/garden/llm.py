@@ -7,10 +7,10 @@ C'est pour ça qu'on peut le tester sans lancer le retrieval.
 
 from groq import Groq
 
-from garden.config import GROQ_MODEL
+from garden.config import settings, GROQ_MODEL
 
 # Client créé une fois. Lit GROQ_API_KEY dans l'environnement.
-_client = Groq()
+_client = Groq(api_key=settings.groq_api_key)
 
 
 def generate(messages: list[dict]) -> str:
