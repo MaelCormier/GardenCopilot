@@ -4,3 +4,4 @@ qdrant-client==1.12.1
 groq==0.13.1
 pydantic-settings==2.7.0
 sentence-transformers
+langgraph>=0.2,<0.3
