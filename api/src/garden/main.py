@@ -1,18 +1,22 @@
-# main.py
+# src/garden/main.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from garden.rag import answer
+
+from garden.graph import answer
+
+app = FastAPI(title="Garden Copilot")
+
 
 class AskRequest(BaseModel):
     question: str
+
 
 class AskResponse(BaseModel):
     answer: str
     sources: list[str]
 
-app = FastAPI()
 
 @app.post("/ask", response_model=AskResponse)
 def ask(req: AskRequest):
-    response, sources = answer(req.question)
-    return AskResponse(answer=response, sources=sources)
+    result = answer(req.question)
+    return AskResponse(answer=result["answer"], sources=result["sources"])

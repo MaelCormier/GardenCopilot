@@ -5,9 +5,9 @@ Contient l'Augmentation (build_prompt) et le pipeline complet (answer).
 C'est CE module que main.py importera pour l'endpoint /ask.
 """
 
+from garden.embeddings import encode
 from garden.llm import generate
 from garden.vectorstore import search
-from garden.embeddings import encode
 
 # --- A : le garde-fou strict (ne répond QUE depuis le contexte) ---
 SYSTEM_PROMPT = (
@@ -19,13 +19,12 @@ SYSTEM_PROMPT = (
 )
 
 
-def build_prompt(question: str, chunks: list[str]) -> list[dict]:
-    """Fusionne consigne + chunks (contexte) + question en messages Groq."""
-    context = "\n\n---\n\n".join(chunks)
+def build_prompt(question, chunks):
+    context = "\n\n---\n\n".join(c["text"] for c in chunks)
     user_content = f"CONTEXTE:\n{context}\n\nQUESTION:\n{question}"
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user",   "content": user_content},
+        {"role": "user", "content": user_content},
     ]
 
 

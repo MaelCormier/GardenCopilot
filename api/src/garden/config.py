@@ -1,9 +1,10 @@
 # src/garden/config.py
 from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ── Constantes de code (fixes, pas d'env) ──────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent   # /app
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # /app
 DATA_DIR = BASE_DIR / "data"
 
 COLLECTION = "jardinage"
@@ -12,6 +13,7 @@ EMBEDDING_DIM = 384
 MAX_WORDS = 100
 MIN_WORDS = 8
 TOP_K = 5
+MAX_ATTEMPTS = 2
 
 GROQ_MODEL = "openai/gpt-oss-120b"
 
@@ -28,4 +30,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()   # instancié une fois, importé partout
+settings = Settings()  # instancié une fois, importé partout
