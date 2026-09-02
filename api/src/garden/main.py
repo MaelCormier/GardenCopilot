@@ -1,10 +1,18 @@
 # src/garden/main.py
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from garden.graph import answer
 
 app = FastAPI(title="Garden Copilot")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["POST"],
+    allow_headers=["Content-Type"],
+)
 
 
 class AskRequest(BaseModel):
