@@ -17,6 +17,7 @@ class RagState(TypedDict):
     sources: list[str]
     relevant: bool
     attempts: int
+    history: list[dict]
 
 
 # ── 2. Nœuds ──────────────────────────────────────────────────
@@ -58,7 +59,7 @@ def rewrite(state: RagState) -> dict:
 
 def generate_node(state: RagState) -> dict:
     sources = list(dict.fromkeys(c["source"] for c in state["chunks"]))
-    prompt = build_prompt(state["question"], state["chunks"])
+    prompt = build_prompt(state["question"], state["chunks"], state.get("history"))
     return {"answer": generate(prompt), "sources": sources}
 
 
@@ -90,10 +91,43 @@ def build_graph():
 graph = build_graph()
 
 
+def _build_prep_graph():
+    g = StateGraph(RagState)
+    g.add_node("retrieve", retrieve)
+    g.add_node("grade", grade)
+    g.add_node("rewrite", rewrite)
+
+    g.add_edge(START, "retrieve")
+    g.add_edge("retrieve", "grade")
+    g.add_conditional_edges(
+        "grade",
+        decide,
+        {"generate": END, "rewrite": "rewrite"},
+    )
+    g.add_edge("rewrite", "retrieve")
+
+    return g.compile()
+
+
+_prep_graph = _build_prep_graph()
+
+
+def prepare(question: str) -> dict:
+    """retrieve → grade → (rewrite) sans générer. Pour le streaming."""
+    state = _prep_graph.invoke({"question": question, "attempts": 0})
+    return {"question": state["question"], "chunks": state["chunks"]}
+
+
 # ── 5. Test isolé ─────────────────────────────────────────────
-def answer(question: str) -> dict:
-    """Point d'entrée : question → {answer, sources}."""
-    return graph.invoke({"question": question, "attempts": 0})
+def answer(question: str, history: list[dict] | None = None) -> dict:
+    state = graph.invoke(
+        {
+            "question": question,
+            "attempts": 0,
+            "history": history or [],
+        }
+    )
+    return {"answer": state["answer"], "sources": state["sources"]}
 
 
 if __name__ == "__main__":

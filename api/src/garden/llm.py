@@ -5,12 +5,15 @@ Dépend seulement de config. Ne connaît ni Qdrant ni le modèle d'embedding.
 C'est pour ça qu'on peut le tester sans lancer le retrieval.
 """
 
-from groq import Groq
+from collections.abc import AsyncIterator
 
-from garden.config import settings, GROQ_MODEL
+from groq import AsyncGroq, Groq
+
+from garden.config import GROQ_MODEL, settings
 
 # Client créé une fois. Lit GROQ_API_KEY dans l'environnement.
 _client = Groq(api_key=settings.groq_api_key)
+_async_client = AsyncGroq(api_key=settings.groq_api_key)
 
 
 def generate(messages: list[dict]) -> str:
@@ -23,6 +26,26 @@ def generate(messages: list[dict]) -> str:
     return resp.choices[0].message.content
 
 
+async def generate_stream(messages: list[dict]) -> AsyncIterator[str]:
+    stream = await _async_client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=messages,
+        temperature=0.2,
+        stream=True,
+    )
+    async for chunk in stream:
+        token = chunk.choices[0].delta.content
+        if token:
+            yield token
+
+
 if __name__ == "__main__":
-    # Test isolé : pas besoin de Qdrant, juste un message bidon.
-    print(generate([{"role": "user", "content": "Réponds 'ok' et rien d'autre."}]))
+    import asyncio
+
+    async def _demo():
+        messages = [{"role": "user", "content": "Compte de 1 à 20."}]
+        async for token in generate_stream(messages):
+            print(token, end="", flush=True)
+        print()
+
+    asyncio.run(_demo())

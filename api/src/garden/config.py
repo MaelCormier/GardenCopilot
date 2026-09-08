@@ -14,8 +14,17 @@ MAX_WORDS = 100
 MIN_WORDS = 8
 TOP_K = 5
 MAX_ATTEMPTS = 2
+MAX_HISTORY = 6  # 3 tours (user + assistant)
 
 GROQ_MODEL = "openai/gpt-oss-120b"
+
+SYSTEM_PROMPT = (
+    "Tu es un assistant jardinage. "
+    "Réponds UNIQUEMENT à partir du CONTEXTE fourni. "
+    "Si l'information n'y figure pas, réponds exactement : "
+    '"Je ne trouve pas cette information dans mes documents." '
+    "N'invente jamais, ne complète pas avec des connaissances externes."
+)
 
 
 # ── Config d'environnement (validée au boot) ───────────────────

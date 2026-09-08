@@ -5,27 +5,28 @@ Contient l'Augmentation (build_prompt) et le pipeline complet (answer).
 C'est CE module que main.py importera pour l'endpoint /ask.
 """
 
+from garden.config import MAX_HISTORY, SYSTEM_PROMPT
 from garden.embeddings import encode
 from garden.llm import generate
 from garden.vectorstore import search
 
 # --- A : le garde-fou strict (ne répond QUE depuis le contexte) ---
-SYSTEM_PROMPT = (
-    "Tu es un assistant jardinage. "
-    "Réponds UNIQUEMENT à partir du CONTEXTE fourni. "
-    "Si l'information n'y figure pas, réponds exactement : "
-    '"Je ne trouve pas cette information dans mes documents." '
-    "N'invente jamais, ne complète pas avec des connaissances externes."
-)
 
 
-def build_prompt(question, chunks):
-    context = "\n\n---\n\n".join(c["text"] for c in chunks)
-    user_content = f"CONTEXTE:\n{context}\n\nQUESTION:\n{question}"
-    return [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
+def build_prompt(
+    question: str,
+    chunks: list[dict],
+    history: list[dict] | None = None,
+) -> list[dict]:
+    context = "\n\n".join(c["text"] for c in chunks)
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        messages.extend(history[-MAX_HISTORY:])
+
+    messages.append({"role": "user", "content": f"Contexte :\n{context}\n\nQuestion : {question}"})
+    return messages
 
 
 def answer(question: str) -> tuple[str, list[str]]:
